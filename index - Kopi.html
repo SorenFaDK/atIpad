@@ -2,26 +2,25 @@
 <html lang="da">
 <head>
   <meta charset="UTF-8">
-  <title>MP3 Afspiller – Kun audio-tag</title>
+  <title>MP3 Afspiller med GitHub Link</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
   <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 p-6">
 
   <div class="max-w-xl mx-auto bg-white rounded-lg shadow p-6">
-    <h1 class="text-2xl font-bold mb-4 text-center">🎧 MP3 Afspiller (kun audio-tag)</h1>
+    <h1 class="text-2xl font-bold mb-4 text-center">🎵 MP3 Afspiller</h1>
 
     <label class="block mb-2 font-semibold">Vælg lokal MP3:</label>
     <input type="file" id="fileInput" accept="audio/mp3" class="mb-4 w-full border p-2 rounded">
 
     <label class="block mb-2 font-semibold">...eller indtast URL:</label>
-    <input type="text" id="urlInput" placeholder="https://example.com/fil.mp3" class="mb-4 w-full border p-2 rounded">
+    <input type="text" id="urlInput" placeholder="https://example.com/lyd.mp3" class="mb-4 w-full border p-2 rounded">
 
     <button id="play-button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full">▶️ Afspil</button>
 
-    <div id="status" class="text-center mt-4 text-sm text-gray-600">Status: -</div>
-
-    <audio id="html5audio" controls style="width: 100%; margin-top: 1em;"></audio>
+    <div id="status" class="text-center mt-4 text-sm text-gray-600">Ingen fil valgt</div>
 
     <div class="mt-6 text-center">
       🔗 <a href="https://github.com/atIpad" target="_blank" class="text-blue-700 underline">Se koden på GitHub</a>
@@ -29,8 +28,27 @@
   </div>
 
   <script>
-    const audio = document.getElementById("html5audio");
-    const status = document.getElementById("status");
+    let sound;
+
+    function createSound(src) {
+      if (sound) sound.unload(); // Stop tidligere lyd
+
+      sound = new Howl({
+        src: [src],
+        html5: true,
+        onplay: () => {
+          document.getElementById("status").textContent = "Afspiller...";
+        },
+        onloaderror: (_, msg) => {
+          document.getElementById("status").textContent = "Fejl ved indlæsning: " + msg;
+        },
+        onplayerror: (_, msg) => {
+          document.getElementById("status").textContent = "Afspilningsfejl: " + msg;
+        }
+      });
+
+      sound.play();
+    }
 
     document.getElementById('play-button').addEventListener('click', () => {
       const fileInput = document.getElementById('fileInput').files[0];
@@ -38,15 +56,11 @@
 
       if (fileInput) {
         const localUrl = URL.createObjectURL(fileInput);
-        audio.src = localUrl;
-        audio.play();
-        status.textContent = "Status: Afspiller lokal fil...";
+        createSound(localUrl);
       } else if (urlInput) {
-        audio.src = urlInput;
-        audio.play();
-        status.textContent = "Status: Afspiller fra URL...";
+        createSound(urlInput);
       } else {
-        status.textContent = "Status: Vælg en fil eller indtast en URL.";
+        document.getElementById("status").textContent = "Vælg en lokal fil eller indtast en URL.";
       }
     });
   </script>
